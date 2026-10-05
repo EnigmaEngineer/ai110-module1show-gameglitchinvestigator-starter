@@ -1,56 +1,7 @@
 import random
 import streamlit as st
-# FIX: Moved check_guess into logic_utils.py; Claude Code (agent mode) did the move, I reviewed the diff.
-from logic_utils import check_guess
-
-def get_range_for_difficulty(difficulty: str):
-    if difficulty == "Easy":
-        return 1, 20
-    if difficulty == "Normal":
-        return 1, 100
-    if difficulty == "Hard":
-        return 1, 50
-    return 1, 100
-
-
-def parse_guess(raw: str, low: int = 1, high: int = 100):
-    if raw is None:
-        return False, None, "Enter a guess."
-
-    if raw == "":
-        return False, None, "Enter a guess."
-
-    try:
-        if "." in raw:
-            value = int(float(raw))
-        else:
-            value = int(raw)
-    except Exception:
-        return False, None, "That is not a number."
-
-    # FIX: Added range validation; Claude Code proposed it, I confirmed guess 0 is now rejected in the app.
-    if value < low or value > high:
-        return False, None, f"Guess must be between {low} and {high}."
-
-    return True, value, None
-
-
-def update_score(current_score: int, outcome: str, attempt_number: int):
-    if outcome == "Win":
-        points = 100 - 10 * (attempt_number + 1)
-        if points < 10:
-            points = 10
-        return current_score + points
-
-    if outcome == "Too High":
-        if attempt_number % 2 == 0:
-            return current_score + 5
-        return current_score - 5
-
-    if outcome == "Too Low":
-        return current_score - 5
-
-    return current_score
+# FIX: Moved all game logic into logic_utils.py; Claude Code (agent mode) did the move, I reviewed the diff.
+from logic_utils import check_guess, get_range_for_difficulty, parse_guess, update_score
 
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
 
@@ -91,6 +42,15 @@ if "status" not in st.session_state:
     st.session_state.status = "playing"
 
 if "history" not in st.session_state:
+    st.session_state.history = []
+
+# FIX: Secret stayed from the old range after a difficulty change; Claude Code found it in testing, so a switch now starts a fresh game.
+if st.session_state.get("difficulty") != difficulty:
+    st.session_state.difficulty = difficulty
+    st.session_state.secret = random.randint(low, high)
+    st.session_state.attempts = 0
+    st.session_state.score = 0
+    st.session_state.status = "playing"
     st.session_state.history = []
 
 st.subheader("Make a guess")
@@ -142,7 +102,7 @@ if submit:
     ok, guess_int, err = parse_guess(raw_guess, low, high)
 
     if not ok:
-        st.session_state.history.append(raw_guess)
+        # FIX: Invalid input is no longer stored in history; Claude Code removed the append, I checked the debug panel.
         st.error(err)
     else:
         # FIX: Count only valid guesses and pass the real int secret (removed the str() glitch); Claude Code edited, I verified in the app.

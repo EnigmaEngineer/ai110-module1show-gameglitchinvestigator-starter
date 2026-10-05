@@ -48,7 +48,9 @@ I used Claude Code in VS Code in agent mode. It moved `check_guess` into `logic_
 
 I counted a bug as fixed only after I saw the changed behavior in the running app, not just in the diff. Claude Code ran `streamlit run app.py` (the server reported healthy) and drove the real `app.py` with Streamlit's AppTest, using a fixed secret of 50 on Normal. Guessing 10 gave "Go HIGHER!" and 90 gave "Go LOWER!". A second guess of 10 on attempt 3 still gave "Go HIGHER!". Guess 0 gave "Guess must be between 1 and 100." and "abc" gave "That is not a number.", and neither used an attempt. Guessing 50 won with the attempt counter at 4. New Game reset status, attempts, score and history.
 
-AI helped me design this check and explained why AppTest works: it runs the same script without a browser. It is not a real browser click-through, so I should still play the game by hand. I have not run pytest or tested the Easy/Hard difficulty switch, and the secret is not regenerated when difficulty changes until New Game is clicked.
+For the backwards-hint bug specifically, Claude Code added `test_hints_point_toward_secret_regression` to `tests/test_game_logic.py`. It checks every guess from 1 to 100 against a secret of 50 and asserts that a higher guess returns "Too High" with "LOWER" in the message, and a lower guess returns "Too Low" with "HIGHER". I ran `python -m pytest -v` and all 8 tests passed: the new one plus the 7 starter tests (win, too high, too low, difficulty ranges, `parse_guess` and `update_score`). I then confirmed the same behavior in the live app: a guess of 60 against a secret of 50 showed "Go LOWER!" and 40 showed "Go HIGHER!".
+
+AI helped me design these checks and explained why AppTest works: it runs the same script without a browser. It is not a real browser click-through, so I should still play the game by hand. Switching difficulty now starts a fresh game (see the FIX comment in `app.py`), but I have only covered that with the AppTest run, not a manual Easy/Hard playthrough.
 
 ---
 
