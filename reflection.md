@@ -8,7 +8,7 @@ Answer each question in 3 to 5 sentences. Be specific and honest about what actu
 - List at least two concrete bugs you noticed at the start  
   (for example: "the hints were backwards").
 
-At first the game looked fine: a text box, a Submit button, and a difficulty picker in the sidebar. Then I started playing and it felt off. The hints were backwards, so guessing 3, 2, 1 when the secret was 64 kept telling me to go lower. It also let me guess 0, and it ended the game after 7 guesses even though Normal says 8. Looking through app.py, I found the swapped hint messages, no range check on guesses, and the secret getting turned into a string on every other attempt. The attempt counter started at 1 instead of 0.
+At first the game looked fine, a text box, a Submit button and a difficulty picker in the sidebar. Then I started playing and it felt off. The hints were backwards, so guessing 3, 2, 1 when the secret was 64 kept telling me to go lower. It also let me guess 0 and it ended the game after 7 guesses even though Normal says 8. Looking through app.py, I found the swapped hint messages, no range check on guesses and the secret getting turned into a string on every other attempt. The attempt counter started at 1 instead of 0.
 
 **Bug Reproduction Log**
 
@@ -19,7 +19,7 @@ Document at least 3 bugs you found. Add rows as needed.
 | Guess 3, 2, 1 (secret 64, Normal) | "Go HIGHER" each time | "Go LOWER" each time | None | `check_guess`, the two hint messages were swapped |
 | Guess 0 | Error, and no attempt used | Accepted and counted as a guess | None | `parse_guess` never checked the range |
 | Play a full Normal game | 8 guesses | Game over after 7 | None | `attempts` started at 1 instead of 0 |
-| Guess on an even-numbered attempt | Normal number comparison | Wrong hints, because the secret was a string | None | The submit code in app.py converted `secret` to `str` on even attempts |
+| Guess on an even numbered attempt | Normal number comparison | Wrong hints, because the secret was a string | None | The submit code in app.py converted `secret` to `str` on even attempts |
 | Switch to Easy or Hard | Prompt shows 1-20 or 1-50 | Prompt always said 1-100, and New Game picked from 1-100 | None | Hardcoded text in the info box and `randint(1, 100)` in the New Game block |
 | Win or lose, then click New Game | Fresh game | Stuck on "Game over", old score and history kept | None | New Game only reset `attempts` and `secret` |
 
@@ -31,11 +31,11 @@ Document at least 3 bugs you found. Add rows as needed.
 - Give one example of an AI suggestion that was correct (including what the AI suggested and how you verified the result).
 - Give one example of an AI suggestion you did not accept as written (including what the AI suggested, why you rejected or changed it, and how you verified your version). It does not have to be a suggestion that was wrong: over-engineered, out of scope, harder to read, or a poor fit for this codebase all count.
 
-I used Claude Code in VS Code in agent mode. It moved `check_guess` into `logic_utils.py`, and I reviewed the diff for every file it touched before trusting it.
+I used Claude Code in VS Code in agent mode. It moved `check_guess` into `logic_utils.py` and I reviewed the diff for every file it touched before trusting it.
 
-**Correct suggestion:** Claude Code said the `str(secret)` conversion on even-numbered attempts in `app.py` was a real bug, and that the `try/except TypeError` fallback in the original `check_guess` was only there to hide it. It removed both and passed the integer secret straight into `check_guess`. This was correct because comparing an int to a string either raised `TypeError` or fell back to comparing text, where "9" > "10". I checked it by guessing several times in a row, including on even attempts, and the hints stayed consistent.
+**Correct suggestion:** Claude Code said the `str(secret)` conversion on even numbered attempts in `app.py` was a real bug and that the `try/except TypeError` fallback in the original `check_guess` was only there to hide it. It removed both and passed the integer secret straight into `check_guess`. This was correct because comparing an int to a string either raised `TypeError` or fell back to comparing text, where "9" > "10". I checked it by guessing several times in a row, including on even attempts and the hints stayed consistent.
 
-**Not accepted as written:** After moving `check_guess`, Claude Code offered to also move `get_range_for_difficulty`, `parse_guess` and `update_score` into `logic_utils.py`. I kept this task to `check_guess` and the high/low fix. The stub `parse_guess` in `logic_utils.py` also had a different signature from the one in `app.py`, since it had no `low`/`high` arguments. Moving everything at once would have mixed refactoring with behavior changes, and it makes the diff harder to review. I checked my smaller version by confirming the `app.py` diff only removed `check_guess` and added the import.
+**Not accepted as written:** After moving `check_guess`, Claude Code offered to also move `get_range_for_difficulty`, `parse_guess` and `update_score` into `logic_utils.py`. I kept this task to `check_guess` and the high/low fix. The stub `parse_guess` in `logic_utils.py` also had a different signature from the one in `app.py`, since it had no `low`/`high` arguments. Moving everything at once would have mixed refactoring with behavior changes and it makes the diff harder to review. I checked my smaller version by confirming the `app.py` diff only removed `check_guess` and added the import. The other three functions were moved in a later commit.
 
 ---
 
@@ -48,15 +48,17 @@ I used Claude Code in VS Code in agent mode. It moved `check_guess` into `logic_
 
 I counted a bug as fixed only after I saw the changed behavior in the running app, not just in the diff. Claude Code ran `streamlit run app.py` (the server reported healthy) and drove the real `app.py` with Streamlit's AppTest, using a fixed secret of 50 on Normal. Guessing 10 gave "Go HIGHER!" and 90 gave "Go LOWER!". A second guess of 10 on attempt 3 still gave "Go HIGHER!". Guess 0 gave "Guess must be between 1 and 100." and "abc" gave "That is not a number.", and neither used an attempt. Guessing 50 won with the attempt counter at 4. New Game reset status, attempts, score and history.
 
-For the backwards-hint bug specifically, Claude Code added `test_hints_point_toward_secret_regression` to `tests/test_game_logic.py`. It checks every guess from 1 to 100 against a secret of 50 and asserts that a higher guess returns "Too High" with "LOWER" in the message, and a lower guess returns "Too Low" with "HIGHER". I ran `python -m pytest -v` and all 8 tests passed: the new one plus the 7 starter tests (win, too high, too low, difficulty ranges, `parse_guess` and `update_score`). I then confirmed the same behavior in the live app: a guess of 60 against a secret of 50 showed "Go LOWER!" and 40 showed "Go HIGHER!".
+For the backwards hint bug specifically, Claude Code added `test_hints_point_toward_secret_regression` to `tests/test_game_logic.py`. It checks every guess from 1 to 100 against a secret of 50 and asserts that a higher guess returns "Too High" with "LOWER" in the message, and a lower guess returns "Too Low" with "HIGHER". Claude Code ran `python -m pytest -v` after adding it and all 8 tests passed at that point: the new one plus the 7 starter tests (win, too high, too low, difficulty ranges, `parse_guess` and `update_score`). The suite has since grown to 42 tests and they all pass. The same behavior showed up in the running app: a guess of 60 against a secret of 50 gave "Go LOWER!" and 40 gave "Go HIGHER!".
 
-AI helped me design these checks and explained why AppTest works: it runs the same script without a browser. It is not a real browser click-through, so I should still play the game by hand. Switching difficulty now starts a fresh game (see the FIX comment in `app.py`), but I have only covered that with the AppTest run, not a manual Easy/Hard playthrough.
+AI helped me design these checks and explained why AppTest works: it runs the same script without a browser. Since it is not a real browser, I also played the game by hand on Normal and Easy and repeated the same cases, plus the high score and the Easy/Normal switch (see `ai_interactions.md`).
 
 ---
 
 ## 4. What did you learn about Streamlit and state?
 
 - How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
+
+Every time you click a button or change a box, Streamlit runs the whole Python file again from the top. Normal variables get wiped and rebuilt on each click, so a secret picked with `random.randint` would change every time you pressed Submit. `st.session_state` is the one place that survives a rerun, so the game only picks a secret when there isn't one stored yet and the attempts, score and guess history live there too. It also runs in order, so the sidebar gets drawn before the guess is handled and would show the old best score after a win, which is why the app redraws it from a placeholder.
 
 ---
 
@@ -66,3 +68,9 @@ AI helped me design these checks and explained why AppTest works: it runs the sa
   - This could be a testing habit, a prompting strategy, or a way you used Git.
 - What is one thing you would do differently next time you work with AI on a coding task?
 - In one or two sentences, describe how this project changed the way you think about AI generated code.
+
+I want to keep running the real thing after every change instead of trusting what the AI says it did. Playing the game in the browser showed me how the hints and the table actually look, and that's where I decided to drop the words from the "Burning hot" label. I also liked the test that tries every guess from 1 to 100, since it covers far more than a single example.
+
+Next time I'd commit after each fix and ask the AI for one small change at a time. This time all five challenges piled up uncommitted across several files, which makes them harder to review and to undo.
+
+The starter game says it's production ready and you can't even win it and when four assistants fixed the same bug, one of them also rewrote the code around it and brought back two bugs that were already fixed. So now I read everything an AI changes, including the parts I didn't ask about.
