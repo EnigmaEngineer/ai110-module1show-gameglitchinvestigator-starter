@@ -18,7 +18,13 @@ def check_guess(guess, secret):
 
     outcome examples: "Win", "Too High", "Too Low"
     """
-    raise NotImplementedError("Refactor this function from app.py into logic_utils.py")
+    # FIX: Refactored check_guess into logic_utils.py using agent mode and swapped the backwards hints; I reviewed the diff and played it.
+    if guess == secret:
+        return "Win", "🎉 Correct!"
+
+    if guess > secret:
+        return "Too High", "📉 Go LOWER!"
+    return "Too Low", "📈 Go HIGHER!"
 
 
 def update_score(current_score: int, outcome: str, attempt_number: int):
