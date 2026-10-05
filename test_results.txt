@@ -1,0 +1,52 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.14, pytest-9.1.0, pluggy-1.6.0 -- C:\Users\syeds\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\syeds\Documents\Projects\ai110-module1show-gameglitchinvestigator-starter
+plugins: anyio-4.14.1, locust-2.44.4, asyncio-1.4.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 42 items
+
+tests/test_game_logic.py::test_winning_guess PASSED                      [  2%]
+tests/test_game_logic.py::test_guess_too_high PASSED                     [  4%]
+tests/test_game_logic.py::test_guess_too_low PASSED                      [  7%]
+tests/test_game_logic.py::test_hints_point_toward_secret_regression PASSED [  9%]
+tests/test_game_logic.py::test_range_for_difficulty PASSED               [ 11%]
+tests/test_game_logic.py::test_parse_guess_valid PASSED                  [ 14%]
+tests/test_game_logic.py::test_parse_guess_rejects_out_of_range_and_junk PASSED [ 16%]
+tests/test_game_logic.py::test_update_score PASSED                       [ 19%]
+tests/test_game_logic.py::test_parse_guess_rejects_negative_numbers[-5] PASSED [ 21%]
+tests/test_game_logic.py::test_parse_guess_rejects_negative_numbers[-1] PASSED [ 23%]
+tests/test_game_logic.py::test_parse_guess_rejects_negative_numbers[-0] PASSED [ 26%]
+tests/test_game_logic.py::test_parse_guess_rejects_negative_numbers[-0.5] PASSED [ 28%]
+tests/test_game_logic.py::test_parse_guess_rejects_negative_numbers[-999999] PASSED [ 30%]
+tests/test_game_logic.py::test_parse_guess_truncates_decimals_in_range[3.7-3] PASSED [ 33%]
+tests/test_game_logic.py::test_parse_guess_truncates_decimals_in_range[42.0-42] PASSED [ 35%]
+tests/test_game_logic.py::test_parse_guess_truncates_decimals_in_range[100.9-100] PASSED [ 38%]
+tests/test_game_logic.py::test_parse_guess_rejects_decimals_that_land_out_of_range[0.9] PASSED [ 40%]
+tests/test_game_logic.py::test_parse_guess_rejects_decimals_that_land_out_of_range[0.0] PASSED [ 42%]
+tests/test_game_logic.py::test_parse_guess_rejects_decimals_that_land_out_of_range[101.0] PASSED [ 45%]
+tests/test_game_logic.py::test_parse_guess_handles_extremely_large_values_without_crashing[20-digit-int] PASSED [ 47%]
+tests/test_game_logic.py::test_parse_guess_handles_extremely_large_values_without_crashing[5000-digit-int] PASSED [ 50%]
+tests/test_game_logic.py::test_parse_guess_handles_extremely_large_values_without_crashing[sci-notation] PASSED [ 52%]
+tests/test_game_logic.py::test_parse_guess_handles_extremely_large_values_without_crashing[float-overflow] PASSED [ 54%]
+tests/test_game_logic.py::test_parse_guess_handles_extremely_large_values_without_crashing[inf] PASSED [ 57%]
+tests/test_game_logic.py::test_parse_guess_handles_extremely_large_values_without_crashing[nan] PASSED [ 59%]
+tests/test_game_logic.py::test_high_score_saved_and_only_beaten_by_higher PASSED [ 61%]
+tests/test_game_logic.py::test_high_score_negative_first_score_is_recorded PASSED [ 64%]
+tests/test_game_logic.py::test_high_score_corrupt_file_is_ignored[] PASSED [ 66%]
+tests/test_game_logic.py::test_high_score_corrupt_file_is_ignored[not json] PASSED [ 69%]
+tests/test_game_logic.py::test_high_score_corrupt_file_is_ignored[[1, 2]] PASSED [ 71%]
+tests/test_game_logic.py::test_high_score_corrupt_file_is_ignored[{"Normal": "high"}] PASSED [ 73%]
+tests/test_game_logic.py::test_temperature_labels_on_normal_range[50-Correct] PASSED [ 76%]
+tests/test_game_logic.py::test_temperature_labels_on_normal_range[52-Burning hot] PASSED [ 78%]
+tests/test_game_logic.py::test_temperature_labels_on_normal_range[60-Hot] PASSED [ 80%]
+tests/test_game_logic.py::test_temperature_labels_on_normal_range[70-Warm] PASSED [ 83%]
+tests/test_game_logic.py::test_temperature_labels_on_normal_range[85-Cool] PASSED [ 85%]
+tests/test_game_logic.py::test_temperature_labels_on_normal_range[1-Cool] PASSED [ 88%]
+tests/test_game_logic.py::test_temperature_labels_on_normal_range[100-Cold] PASSED [ 90%]
+tests/test_game_logic.py::test_temperature_scales_with_range_size PASSED [ 92%]
+tests/test_game_logic.py::test_temperature_is_symmetric_and_has_emoji PASSED [ 95%]
+tests/test_game_logic.py::test_temperature_does_not_change_check_guess PASSED [ 97%]
+tests/test_game_logic.py::test_temperature_handles_degenerate_range PASSED [100%]
+
+============================= 42 passed in 0.12s ==============================
